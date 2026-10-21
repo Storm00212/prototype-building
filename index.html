@@ -1,0 +1,647 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#07140c">
+<title>From Idea to Working Prototype | DeKUT-HRIC</title>
+<style>
+:root{
+  --bg:#06110b;--bg2:#0a1b10;--panel:rgba(13,34,20,.88);--panel2:#10291a;
+  --green:#8ee83f;--green2:#39b54a;--mint:#c9ff9a;--white:#f4f8f1;
+  --muted:#b5c8b8;--line:rgba(142,232,63,.28);--red:#ff6767;--amber:#ffd36a;
+  --shadow:0 18px 60px rgba(0,0,0,.32)
+}
+*{box-sizing:border-box}
+html,body{margin:0;width:100%;height:100%;background:var(--bg);color:var(--white);font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+body{overflow:hidden;background-image:radial-gradient(ellipse at 15% 15%,rgba(57,181,74,.15),transparent 35%),radial-gradient(ellipse at 90% 85%,rgba(142,232,63,.08),transparent 35%),linear-gradient(135deg,#050c08,#09180e 55%,#06110b)}
+button{font:inherit;cursor:pointer}
+a{color:var(--mint)}
+.deck{height:100dvh;width:100%;position:relative;overflow:hidden}
+.topbar{position:absolute;z-index:10;top:0;left:0;right:0;height:64px;display:flex;align-items:center;justify-content:space-between;padding:0 clamp(16px,4vw,52px);border-bottom:1px solid rgba(255,255,255,.08);background:rgba(4,12,7,.7);backdrop-filter:blur(14px)}
+.brand{display:flex;align-items:center;gap:11px;font-weight:800;letter-spacing:.08em;font-size:.78rem}
+.brand-mark{width:34px;height:34px;border:1px solid var(--green);border-radius:10px;display:grid;place-items:center;color:var(--green);font-size:1.05rem;box-shadow:0 0 22px rgba(142,232,63,.12)}
+.brand small{display:block;color:var(--muted);font-size:.62rem;letter-spacing:.12em;font-weight:600;margin-top:2px}
+.top-actions{display:flex;align-items:center;gap:10px}
+.pill{border:1px solid var(--line);border-radius:999px;padding:7px 12px;color:var(--mint);font-size:.72rem;letter-spacing:.08em;text-transform:uppercase}
+.icon-btn{background:#102319;border:1px solid var(--line);color:var(--white);border-radius:10px;padding:8px 11px}
+.progress{height:3px;position:absolute;top:64px;left:0;right:0;background:rgba(255,255,255,.06);z-index:11}
+.progress span{height:100%;display:block;width:0;background:linear-gradient(90deg,var(--green2),var(--green));box-shadow:0 0 16px var(--green);transition:width .3s}
+.slides{height:100%;width:100%;position:relative}
+.slide{position:absolute;inset:0;padding:94px clamp(22px,7vw,104px) 92px;display:none;overflow:auto;align-items:center}
+.slide.active{display:flex;animation:enter .35s ease both}
+.slide-inner{width:min(1120px,100%);margin:auto}
+@keyframes enter{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+.eyebrow{display:flex;align-items:center;gap:10px;color:var(--green);text-transform:uppercase;letter-spacing:.19em;font-weight:800;font-size:.72rem;margin-bottom:18px}
+.eyebrow:before{content:"";width:28px;height:2px;background:var(--green)}
+h1,h2,h3,p{margin-top:0}
+h1{font-size:clamp(2.7rem,6.6vw,6.4rem);line-height:.98;letter-spacing:-.065em;margin-bottom:24px;max-width:1000px}
+h2{font-size:clamp(2rem,4.1vw,4rem);line-height:1.04;letter-spacing:-.045em;margin-bottom:20px}
+h3{font-size:1.08rem;margin-bottom:10px}
+p{color:var(--muted);font-size:clamp(.96rem,1.2vw,1.1rem);line-height:1.65}
+.lead{font-size:clamp(1.1rem,1.8vw,1.45rem);max-width:780px}
+.gradient{background:linear-gradient(100deg,#f7fff4 8%,var(--mint) 55%,var(--green));-webkit-background-clip:text;background-clip:text;color:transparent}
+.subline{color:var(--green);font-weight:800;letter-spacing:.04em}
+.hero-grid{display:grid;grid-template-columns:1.2fr .8fr;gap:42px;align-items:center}
+.hero-art{position:relative;min-height:350px;border:1px solid var(--line);border-radius:26px;overflow:hidden;background:linear-gradient(140deg,rgba(142,232,63,.1),rgba(8,22,13,.2)),repeating-linear-gradient(0deg,transparent 0 35px,rgba(142,232,63,.07) 36px),repeating-linear-gradient(90deg,transparent 0 35px,rgba(142,232,63,.07) 36px);box-shadow:var(--shadow);display:grid;place-items:center}
+.hero-art:before,.hero-art:after{content:"";position:absolute;border:1px solid rgba(142,232,63,.22);border-radius:50%;width:250px;height:250px}
+.hero-art:after{width:340px;height:340px}
+.core{position:relative;z-index:1;width:145px;height:145px;border-radius:35px;transform:rotate(45deg);border:1px solid var(--green);background:linear-gradient(135deg,#173e20,#07150b);box-shadow:0 0 70px rgba(142,232,63,.2);display:grid;place-items:center}
+.core span{transform:rotate(-45deg);font-size:3.6rem;color:var(--green)}
+.float-tag{position:absolute;padding:10px 13px;border:1px solid var(--line);border-radius:12px;background:rgba(5,16,9,.9);font-size:.78rem;color:var(--mint)}
+.float-tag b{color:var(--white)}
+.tag-a{top:12%;left:8%}.tag-b{top:23%;right:7%}.tag-c{bottom:17%;left:8%}.tag-d{bottom:10%;right:8%}
+.meta-row{display:flex;gap:12px;flex-wrap:wrap;margin-top:28px}
+.stat{border:1px solid var(--line);border-radius:13px;padding:12px 15px;background:rgba(9,27,15,.7);color:var(--muted);font-size:.82rem}
+.stat strong{display:block;color:var(--green);font-size:1.02rem;margin-bottom:3px}
+.grid{display:grid;gap:14px}
+.g2{grid-template-columns:repeat(2,minmax(0,1fr))}
+.g3{grid-template-columns:repeat(3,minmax(0,1fr))}
+.g4{grid-template-columns:repeat(4,minmax(0,1fr))}
+.card{border:1px solid var(--line);background:linear-gradient(145deg,rgba(17,42,25,.94),rgba(8,22,13,.9));border-radius:17px;padding:20px;box-shadow:0 8px 26px rgba(0,0,0,.12);min-width:0}
+.card p{font-size:.92rem;margin-bottom:0}
+.card .num{font-size:.74rem;letter-spacing:.12em;color:var(--green);font-weight:900;margin-bottom:12px}
+.card .symbol{font-size:1.45rem;color:var(--green);margin-bottom:12px}
+.callout{border-left:3px solid var(--green);padding:14px 18px;background:rgba(142,232,63,.07);border-radius:0 12px 12px 0;color:#e4f2e3;line-height:1.6;margin-top:18px}
+.warning{border-left-color:var(--amber);background:rgba(255,211,106,.07)}
+.danger{border-left-color:var(--red);background:rgba(255,103,103,.07)}
+.steps{display:grid;gap:12px;counter-reset:steps}
+.step{display:grid;grid-template-columns:42px 1fr;gap:15px;align-items:start;border:1px solid rgba(255,255,255,.09);background:rgba(11,28,16,.7);padding:16px;border-radius:14px}
+.step:before{counter-increment:steps;content:counter(steps,decimal-leading-zero);font-size:.75rem;color:var(--green);font-weight:900;border:1px solid var(--line);border-radius:10px;width:38px;height:38px;display:grid;place-items:center}
+.step h3{margin-bottom:5px}
+.step p{font-size:.9rem;margin-bottom:0}
+.code{position:relative;background:#030906;border:1px solid rgba(142,232,63,.25);border-radius:14px;padding:18px;overflow:auto;color:#d9f4d5;font: .86rem/1.65 ui-monospace,SFMono-Regular,Consolas,monospace;white-space:pre}
+.code .comment{color:#71977a}.code .cmd{color:#aaff65}
+.copy{position:absolute;top:10px;right:10px;background:#16331e;color:var(--mint);border:1px solid var(--line);border-radius:8px;padding:6px 9px;font-size:.72rem}
+.code-wrap{position:relative;margin:12px 0 18px}
+.label{font-size:.72rem;color:var(--green);text-transform:uppercase;letter-spacing:.13em;font-weight:900;margin:0 0 8px}
+.two-col{display:grid;grid-template-columns:1fr 1fr;gap:22px;align-items:start}
+.flow{display:flex;align-items:stretch;gap:8px;flex-wrap:wrap}
+.flow .node{flex:1;min-width:115px;border:1px solid var(--line);border-radius:12px;padding:14px;text-align:center;background:rgba(142,232,63,.06)}
+.flow .arrow{align-self:center;color:var(--green);font-size:1.3rem}
+.table{width:100%;border-collapse:collapse;border:1px solid var(--line);border-radius:12px;overflow:hidden;font-size:.9rem}
+.table th,.table td{padding:12px 14px;text-align:left;border-bottom:1px solid rgba(255,255,255,.08);vertical-align:top}
+.table th{background:rgba(142,232,63,.09);color:var(--mint);font-size:.75rem;text-transform:uppercase;letter-spacing:.08em}
+.table td{color:var(--muted)}.table tr:last-child td{border-bottom:0}
+.kbd{display:inline-block;padding:2px 7px;border:1px solid #46634a;border-radius:5px;background:#0b1d10;color:var(--mint);font: .78rem ui-monospace,monospace}
+.footer{position:absolute;bottom:0;left:0;right:0;z-index:10;display:flex;align-items:center;justify-content:space-between;gap:12px;padding:16px clamp(16px,4vw,52px);background:linear-gradient(0deg,rgba(4,12,7,.98),rgba(4,12,7,.72));border-top:1px solid rgba(255,255,255,.07)}
+.footer-note{color:#8da893;font-size:.72rem;letter-spacing:.08em}
+.controls{display:flex;gap:8px;align-items:center}
+.nav-btn{border:1px solid var(--line);background:#102319;color:var(--white);border-radius:10px;padding:9px 14px}
+.nav-btn.primary{background:var(--green);border-color:var(--green);color:#07120a;font-weight:900}
+.counter{font: .8rem ui-monospace,monospace;color:var(--mint);min-width:58px;text-align:center}
+.toc{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+.toc-item{display:flex;gap:12px;align-items:center;text-align:left;padding:14px;background:rgba(11,28,16,.7);border:1px solid rgba(255,255,255,.1);border-radius:12px;color:var(--white)}
+.toc-item:hover{border-color:var(--green)}
+.toc-item span{font-size:.72rem;color:var(--green);font-weight:900}
+.checklist{display:grid;gap:10px}
+.check{display:flex;gap:12px;align-items:flex-start;padding:12px 14px;border-radius:12px;border:1px solid rgba(255,255,255,.09);background:rgba(10,27,15,.7);color:var(--muted);line-height:1.45}
+.check input{accent-color:var(--green);margin-top:4px;transform:scale(1.15)}
+.check:has(input:checked){border-color:var(--line);color:var(--mint)}
+.mini{font-size:.8rem!important}
+kbd{background:#152c1a;border:1px solid #38563c;padding:2px 6px;border-radius:5px;color:var(--mint)}
+.endmark{font-size:clamp(4rem,12vw,9rem);line-height:1;color:var(--green);filter:drop-shadow(0 0 25px rgba(142,232,63,.2))}
+@media(max-width:800px){
+ .topbar{height:56px}.progress{top:56px}.slide{padding:78px 18px 85px}.hero-grid,.two-col{grid-template-columns:1fr}.hero-art{min-height:230px}.hero-art .core{width:100px;height:100px}.core span{font-size:2.5rem}
+ .g3,.g4{grid-template-columns:repeat(2,minmax(0,1fr))}.toc{grid-template-columns:repeat(2,1fr)}.footer{padding:12px 14px}.footer-note{display:none}.pill{display:none}
+ h1{font-size:clamp(2.6rem,12vw,4.6rem)}
+}
+@media(max-width:480px){.g2,.g3,.g4,.toc{grid-template-columns:1fr}.card{padding:16px}.top-actions .icon-btn{padding:7px 9px}.nav-btn{padding:8px 10px}.step{padding:12px}.table{font-size:.78rem}.table th,.table td{padding:9px}}
+@media(prefers-reduced-motion:reduce){*,*:before,*:after{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+<div class="deck">
+<header class="topbar">
+  <div class="brand"><div class="brand-mark">⌘</div><div>DEKUT · HRIC<small>BUILD WEEKEND FIELD GUIDE</small></div></div>
+  <div class="top-actions"><span class="pill">Idea → Working demo</span><button class="icon-btn" id="overviewBtn" title="Show slide overview">☷ Overview</button><button class="icon-btn" id="fullscreenBtn" title="Toggle fullscreen">⛶</button></div>
+</header>
+<div class="progress"><span id="progressBar"></span></div>
+<main class="slides" id="slides">
+
+<section class="slide active" data-title="Start here">
+ <div class="slide-inner hero-grid">
+  <div>
+   <div class="eyebrow">DeKUT Health Research & Innovation Club</div>
+   <h1>From idea<br>to <span class="gradient">working prototype.</span></h1>
+   <p class="lead">A practical, no-mystery guide for building a web or mobile demo this weekend — from the first folder to a live link you can show judges.</p>
+   <div class="meta-row"><div class="stat"><strong>01 · PLAN</strong>Make the problem clear</div><div class="stat"><strong>02 · BUILD</strong>Make one flow work</div><div class="stat"><strong>03 · SHIP</strong>Deploy and test it</div></div>
+   <p class="mini" style="margin-top:24px">Made for JavaScript teams · React / Next.js / React Native · Node.js · SQL or NoSQL</p>
+  </div>
+  <div class="hero-art" aria-label="Abstract technology illustration">
+   <div class="float-tag tag-a"><b>FRONTEND</b><br>What people see</div><div class="float-tag tag-b"><b>API</b><br>Rules + logic</div><div class="float-tag tag-c"><b>DATABASE</b><br>Saved information</div><div class="float-tag tag-d"><b>DEPLOY</b><br>A shareable link</div>
+   <div class="core"><span>⌘</span></div>
+  </div>
+ </div>
+</section>
+
+<section class="slide" data-title="How to use this guide">
+ <div class="slide-inner">
+  <div class="eyebrow">Before you open your editor</div><h2>Build the <span class="gradient">smallest useful thing.</span></h2>
+  <p class="lead">A prototype is not the finished product. It is a believable, testable demonstration that the core idea can work.</p>
+  <div class="grid g3">
+   <div class="card"><div class="num">01 / PROBLEM</div><div class="symbol">◎</div><h3>Who has the problem?</h3><p>Name one real user and one painful task. Avoid solving every problem in the sector at once.</p></div>
+   <div class="card"><div class="num">02 / MAIN FLOW</div><div class="symbol">↗</div><h3>One complete journey</h3><p>For example: submit a report → see confirmation → view that report in a dashboard.</p></div>
+   <div class="card"><div class="num">03 / PROOF</div><div class="symbol">✓</div><h3>Show evidence</h3><p>Use a real working flow, sample data clearly labelled as sample, and a short demo script.</p></div>
+  </div>
+  <div class="callout"><b>Weekend rule:</b> a simple feature that works from start to finish beats ten impressive buttons that do nothing.</div>
+ </div>
+</section>
+
+<section class="slide" data-title="Choose your architecture">
+ <div class="slide-inner">
+  <div class="eyebrow">Pick the simplest stack your team knows</div><h2>What are we actually <span class="gradient">building?</span></h2>
+  <div class="grid g3">
+   <div class="card"><div class="num">A · WEB FRONTEND</div><h3>React / Vite</h3><p>Good for a fast browser-based prototype. Build the interface and call an API when data needs to be shared or saved.</p><p class="mini"><b>Host:</b> Render Static Site</p></div>
+   <div class="card"><div class="num">B · FULL-STACK WEB</div><h3>Next.js</h3><p>Useful when the team wants pages and server-side routes in one project. Confirm which features need a Node-capable deployment.</p><p class="mini"><b>Host:</b> Render Web Service or another compatible host</p></div>
+   <div class="card"><div class="num">C · MOBILE APP</div><h3>React Native / Expo</h3><p>Build an installable mobile experience. A web preview can help during development, but native device features need device testing.</p><p class="mini"><b>Share:</b> Expo preview / build</p></div>
+  </div>
+  <div class="callout warning"><b>Important hosting distinction:</b> a Render Static Site serves files such as HTML, CSS, JavaScript, and built frontend assets. It does not run your Express server or host a database. Deploy the Node API separately as a Web Service, and use a managed database.</div>
+ </div>
+</section>
+
+<section class="slide" data-title="Plan the demo">
+ <div class="slide-inner">
+  <div class="eyebrow">Spend 20 minutes planning to save 2 hours</div><h2>Agree on the <span class="gradient">demo contract.</span></h2>
+  <div class="two-col">
+   <div class="steps">
+    <div class="step"><div><h3>Write one sentence</h3><p>“[User] can [do task] so that [useful outcome].” If the team cannot agree on this, pause coding.</p></div></div>
+    <div class="step"><div><h3>Draw the happy path</h3><p>List the exact 3–5 actions a judge should be able to complete. Build these first.</p></div></div>
+    <div class="step"><div><h3>Choose what is real</h3><p>Mark features as working, simulated, or planned. Never present mock results as validated clinical or scientific findings.</p></div></div>
+    <div class="step"><div><h3>Set a cut-off</h3><p>Freeze new features before the demo. Reserve time for testing, deployment, and fixing the most visible bugs.</p></div></div>
+   </div>
+   <div class="card"><div class="label">Example · health innovation</div><h3>Problem report flow</h3><div class="flow"><div class="node">User enters a report</div><div class="arrow">→</div><div class="node">API checks it</div><div class="arrow">→</div><div class="node">Report is saved</div><div class="arrow">→</div><div class="node">Dashboard shows it</div></div><p style="margin-top:18px">That is a complete demo. Login, AI, maps, analytics, and notifications can wait unless one of them is the core idea.</p></div>
+  </div>
+ </div>
+</section>
+
+<section class="slide" data-title="Team setup">
+ <div class="slide-inner">
+  <div class="eyebrow">Set up people before setting up packages</div><h2>Give every person a <span class="gradient">clear lane.</span></h2>
+  <div class="grid g2">
+   <div class="card"><div class="num">FRONTEND</div><h3>Interface owner</h3><p>Pages, forms, validation messages, loading states, mobile layout, and API calls.</p></div>
+   <div class="card"><div class="num">BACKEND</div><h3>API owner</h3><p>Routes, request validation, business rules, error responses, and database access.</p></div>
+   <div class="card"><div class="num">DATA</div><h3>Database owner</h3><p>Tables or collections, fields, relationships, seed data, and safe access rules. One person can share this role with backend.</p></div>
+   <div class="card"><div class="num">INTEGRATION / QA</div><h3>Flow owner</h3><p>Connects the parts, tests the full journey, tracks bugs, checks the deployed link, and prepares the demo.</p></div>
+  </div>
+  <div class="callout">One person can hold more than one lane. What matters is that every task has an owner and the team agrees on the interface between parts.</div>
+ </div>
+</section>
+
+<section class="slide" data-title="Tools and project folder">
+ <div class="slide-inner">
+  <div class="eyebrow">Local machine setup</div><h2>Check the basics <span class="gradient">first.</span></h2>
+  <div class="grid g2">
+   <div>
+    <div class="checklist">
+     <label class="check"><input type="checkbox"> Node.js LTS installed; check with <kbd>node -v</kbd></label>
+     <label class="check"><input type="checkbox"> npm available; check with <kbd>npm -v</kbd></label>
+     <label class="check"><input type="checkbox"> Git installed; check with <kbd>git --version</kbd></label>
+     <label class="check"><input type="checkbox"> Editor installed and terminal opens in the project folder</label>
+     <label class="check"><input type="checkbox"> Repository created and team members can access it</label>
+    </div>
+   </div>
+   <div>
+    <div class="label">Create a React + Vite frontend</div>
+    <div class="code-wrap"><pre class="code">npm create vite@latest client -- --template react
+cd client
+npm install
+npm run dev</pre><button class="copy">Copy</button></div>
+    <p class="mini">Open the local URL printed in the terminal. Keep that terminal running while you develop. If you choose TypeScript, use the <kbd>react-ts</kbd> template instead.</p>
+    <div class="callout warning">If the project already exists, do not recreate it. First read its README, inspect the package scripts, install dependencies, and run it before changing files.</div>
+   </div>
+  </div>
+ </div>
+</section>
+
+<section class="slide" data-title="Git without chaos">
+ <div class="slide-inner">
+  <div class="eyebrow">Team workflow</div><h2>Git is your <span class="gradient">undo button</span> and teamwork tool.</h2>
+  <div class="two-col">
+   <div><div class="label">Start a repository</div><div class="code-wrap"><pre class="code">git init
+git add .
+git commit -m "Initial working version"
+git branch -M main
+git remote add origin YOUR_REPOSITORY_URL
+git push -u origin main</pre><button class="copy">Copy</button></div>
+   <p class="mini">If the repository already exists, clone it instead of running <kbd>git init</kbd> in a random folder.</p></div>
+   <div><div class="label">Safe daily routine</div><div class="steps">
+    <div class="step"><div><h3>Pull before starting</h3><p><kbd>git pull</kbd> brings in the latest shared work.</p></div></div>
+    <div class="step"><div><h3>Work in a branch</h3><p><kbd>git switch -c feature/report-form</kbd></p></div></div>
+    <div class="step"><div><h3>Commit a small change</h3><p><kbd>git add .</kbd> then <kbd>git commit -m "Add report form"</kbd></p></div></div>
+    <div class="step"><div><h3>Push and review</h3><p><kbd>git push -u origin feature/report-form</kbd>; merge after checking the change.</p></div></div>
+   </div></div>
+  </div>
+  <div class="callout danger"><b>Never commit:</b> <kbd>.env</kbd> files, API keys, passwords, database credentials, private user data, or production dumps. Add secrets to <kbd>.gitignore</kbd> and the hosting provider's environment settings.</div>
+ </div>
+</section>
+
+<section class="slide" data-title="Agree on API contracts">
+ <div class="slide-inner">
+  <div class="eyebrow">Frontend and backend can work in parallel</div><h2>Agree on the <span class="gradient">shape of the data.</span></h2>
+  <p>Before both sides code independently, agree on the URL, method, fields, and response. This prevents the frontend expecting <kbd>reportId</kbd> while the backend returns <kbd>id</kbd>.</p>
+  <table class="table"><thead><tr><th>Action</th><th>Method + route</th><th>Request example</th><th>Success</th></tr></thead><tbody>
+   <tr><td>Create report</td><td><kbd>POST /api/reports</kbd></td><td><code>{"title":"Broken tap","details":"Ward 2"}</code></td><td><kbd>201</kbd> + saved report</td></tr>
+   <tr><td>List reports</td><td><kbd>GET /api/reports</kbd></td><td>None</td><td><kbd>200</kbd> + array</td></tr>
+   <tr><td>Read one</td><td><kbd>GET /api/reports/:id</kbd></td><td>ID in URL</td><td><kbd>200</kbd> or <kbd>404</kbd></td></tr>
+   <tr><td>Update status</td><td><kbd>PATCH /api/reports/:id</kbd></td><td><code>{"status":"resolved"}</code></td><td><kbd>200</kbd> + updated report</td></tr>
+  </tbody></table>
+  <div class="callout">These are examples, not a mandatory API. Write your own contract in the README or a shared note and keep it stable while teammates build against it.</div>
+ </div>
+</section>
+
+<section class="slide" data-title="Build the interface">
+ <div class="slide-inner">
+  <div class="eyebrow">Frontend sequence</div><h2>Build screens in the <span class="gradient">order users need them.</span></h2>
+  <div class="grid g3">
+   <div class="card"><div class="num">01</div><h3>Page skeleton</h3><p>Header, navigation, main content, and a layout that works on a phone.</p></div>
+   <div class="card"><div class="num">02</div><h3>Static content</h3><p>Use sample objects to design the screen before the API is ready.</p></div>
+   <div class="card"><div class="num">03</div><h3>Form states</h3><p>Empty, typing, invalid, submitting, success, and failure states.</p></div>
+   <div class="card"><div class="num">04</div><h3>Connect API</h3><p>Replace sample data with a real request and show errors clearly.</p></div>
+   <div class="card"><div class="num">05</div><h3>Small-screen test</h3><p>Check narrow width, long text, keyboard overlap, and tap targets.</p></div>
+   <div class="card"><div class="num">06</div><h3>Polish last</h3><p>Spacing, motion, icons, and colour come after the main flow works.</p></div>
+  </div>
+  <div class="callout warning">A button must either do something meaningful or be visibly marked as “coming soon”. A dead button is a bug, even if the design looks good.</div>
+ </div>
+</section>
+
+<section class="slide" data-title="Backend setup">
+ <div class="slide-inner">
+  <div class="eyebrow">Node + Express API</div><h2>Keep the backend <span class="gradient">boring and predictable.</span></h2>
+  <div class="two-col">
+   <div>
+    <div class="label">Create a minimal API folder</div>
+    <div class="code-wrap"><pre class="code">mkdir server
+cd server
+npm init -y
+npm install express cors dotenv
+npm install --save-dev nodemon</pre><button class="copy">Copy</button></div>
+    <p class="mini">If using TypeScript, add your chosen TypeScript tooling and types. Don't mix TypeScript and plain JavaScript setup instructions blindly.</p>
+   </div>
+   <div>
+    <div class="label">Example server.js</div>
+    <div class="code-wrap"><pre class="code">require("dotenv").config();
+const express = require("express");
+const cors = require("cors");
+
+const app = express();
+app.use(cors({
+  origin: process.env.CLIENT_ORIGIN
+}));
+app.use(express.json());
+
+app.get("/api/health", (_req, res) => {
+  res.json({ status: "ok" });
+});
+
+const port = process.env.PORT || 5000;
+app.listen(port, "0.0.0.0", () => {
+  console.log(`API listening on ${port}`);
+});</pre><button class="copy">Copy</button></div>
+   </div>
+  </div>
+  <div class="callout">This example uses CommonJS. If your package has <kbd>"type": "module"</kbd>, use <kbd>import</kbd> syntax instead. Don't paste both module styles into the same file.</div>
+ </div>
+</section>
+
+<section class="slide" data-title="API routes and validation">
+ <div class="slide-inner">
+  <div class="eyebrow">Request in · response out</div><h2>Validate at the <span class="gradient">backend boundary.</span></h2>
+  <div class="two-col">
+   <div class="card"><h3>A route should answer four questions</h3><div class="steps">
+    <div class="step"><div><h3>What came in?</h3><p>Read URL params, query values, and JSON body.</p></div></div>
+    <div class="step"><div><h3>Is it valid?</h3><p>Check required fields, types, lengths, and allowed values.</p></div></div>
+    <div class="step"><div><h3>What should happen?</h3><p>Apply the rule and call the database layer.</p></div></div>
+    <div class="step"><div><h3>What should go back?</h3><p>Return a clear status code and predictable JSON.</p></div></div>
+   </div></div>
+   <div><div class="label">Example error responses</div><div class="code-wrap"><pre class="code">{
+  "error": {
+    "code": "VALIDATION_ERROR",
+    "message": "Title is required"
+  }
+}</pre><button class="copy">Copy</button></div>
+   <table class="table"><tbody><tr><td><kbd>200</kbd></td><td>Request succeeded</td></tr><tr><td><kbd>201</kbd></td><td>Something was created</td></tr><tr><td><kbd>400</kbd></td><td>Invalid input</td></tr><tr><td><kbd>401 / 403</kbd></td><td>Not signed in / not allowed</td></tr><tr><td><kbd>404</kbd></td><td>Not found</td></tr><tr><td><kbd>500</kbd></td><td>Unexpected server problem</td></tr></tbody></table></div>
+  </div>
+  <div class="callout danger">Never trust frontend validation alone. Anyone can send a request without using your interface. Validate on the server too, and never return passwords, private tokens, or raw database errors.</div>
+ </div>
+</section>
+
+<section class="slide" data-title="Choose a database">
+ <div class="slide-inner">
+  <div class="eyebrow">Store only what the prototype needs</div><h2>SQL or NoSQL? <span class="gradient">Choose by data shape.</span></h2>
+  <div class="grid g2">
+   <div class="card"><div class="symbol">▦</div><h3>SQL · PostgreSQL / MySQL</h3><p>Great when records relate to each other and you want clear rules. Tables, columns, constraints, and joins help keep data consistent.</p><p class="mini"><b>Example:</b> users, reports, report_updates, locations.</p></div>
+   <div class="card"><div class="symbol">◇</div><h3>NoSQL · MongoDB</h3><p>Useful when records are document-shaped and their fields vary. Plan the document shape and indexes instead of treating it as “no structure”.</p><p class="mini"><b>Example:</b> flexible submissions with nested metadata.</p></div>
+  </div>
+  <div class="two-col" style="margin-top:18px">
+   <div><div class="label">Good database habits</div><ul><li>Use environment variables for connection strings.</li><li>Use parameterized queries or a safe ORM.</li><li>Store timestamps consistently.</li><li>Validate and constrain important fields.</li><li>Keep demo data clearly identifiable.</li></ul></div>
+   <div><div class="label">Avoid these traps</div><ul><li>Putting the database password in frontend code.</li><li>Connecting from a browser directly to a private database.</li><li>Assuming a local database exists in production.</li><li>Deleting or resetting production data during debugging.</li></ul></div>
+  </div>
+ </div>
+</section>
+
+<section class="slide" data-title="Connect frontend to API">
+ <div class="slide-inner">
+  <div class="eyebrow">Integration</div><h2>Connect one feature <span class="gradient">all the way through.</span></h2>
+  <div class="flow"><div class="node">Form in browser</div><div class="arrow">→</div><div class="node">fetch() request</div><div class="arrow">→</div><div class="node">Node API</div><div class="arrow">→</div><div class="node">Database</div></div>
+  <div class="two-col" style="margin-top:22px">
+   <div><div class="label">Frontend example</div><div class="code-wrap"><pre class="code">const API_URL = import.meta.env.VITE_API_URL;
+
+async function loadReports() {
+  const response = await fetch(`${API_URL}/api/reports`);
+  if (!response.ok) {
+    throw new Error(`Request failed: ${response.status}`);
+  }
+  return response.json();
+}</pre><button class="copy">Copy</button></div>
+   <p class="mini">In a Vite app, define <kbd>VITE_API_URL</kbd> in the local <kbd>.env</kbd>. Anything prefixed with <kbd>VITE_</kbd> is visible to the browser — never put secrets there.</p></div>
+   <div><div class="label">Check these when connecting</div><div class="checklist">
+    <label class="check"><input type="checkbox"> API URL has no typo or unwanted trailing slash</label>
+    <label class="check"><input type="checkbox"> Frontend sends the expected field names and JSON header</label>
+    <label class="check"><input type="checkbox"> Backend CORS allows the exact deployed frontend origin</label>
+    <label class="check"><input type="checkbox"> Loading, empty, success, and error states are handled</label>
+   </div></div>
+  </div>
+  <div class="callout warning">CORS is not authentication. It controls which browser origins may read responses; it does not stop direct API calls from scripts or tools.</div>
+ </div>
+</section>
+
+<section class="slide" data-title="Authentication and health data">
+ <div class="slide-inner">
+  <div class="eyebrow">Extra care for health-related ideas</div><h2>Keep the demo <span class="gradient">safe and honest.</span></h2>
+  <div class="grid g3">
+   <div class="card"><div class="num">PRIVACY</div><h3>Use dummy data</h3><p>Do not collect real patient names, phone numbers, diagnoses, or records just to make the prototype look realistic.</p></div>
+   <div class="card"><div class="num">ACCESS</div><h3>Limit who can see what</h3><p>Check permissions on the backend. Hiding a button is not access control.</p></div>
+   <div class="card"><div class="num">CLAIMS</div><h3>Explain limitations</h3><p>Label AI output as experimental. Do not call it a diagnosis or validated prediction without proper evidence and review.</p></div>
+  </div>
+  <div class="two-col" style="margin-top:16px">
+   <div class="callout danger"><b>Never do this:</b> upload real sensitive health data into a public demo, log passwords or tokens, commit secrets, or expose a database to the open internet without appropriate controls.</div>
+   <div class="callout"><b>For a competition:</b> use fictional names and generated examples, show a clear privacy note, and explain what would be needed before a real-world pilot.</div>
+  </div>
+ </div>
+</section>
+
+<section class="slide" data-title="Test before deploy">
+ <div class="slide-inner">
+  <div class="eyebrow">Testing is a build step, not a final ceremony</div><h2>Test the <span class="gradient">whole journey.</span></h2>
+  <div class="grid g3">
+   <div class="card"><div class="num">LEVEL 1</div><h3>Manual checks</h3><p>Click every visible control. Submit valid and invalid forms. Refresh the page. Try a narrow screen.</p></div>
+   <div class="card"><div class="num">LEVEL 2</div><h3>API checks</h3><p>Use Postman, Insomnia, or curl. Test missing fields, wrong IDs, empty lists, and server errors.</p></div>
+   <div class="card"><div class="num">LEVEL 3</div><h3>End-to-end check</h3><p>Start from a fresh browser session and complete the exact flow you will show the judges.</p></div>
+  </div>
+  <div class="two-col" style="margin-top:18px">
+   <div><div class="label">Example API smoke test</div><div class="code-wrap"><pre class="code">curl -i https://YOUR-API.onrender.com/api/health</pre><button class="copy">Copy</button></div><p class="mini">Replace the example host with your deployed API URL. Expect a successful HTTP status and the JSON health response.</p></div>
+   <div><div class="label">Browser debugging checklist</div><div class="checklist">
+    <label class="check"><input type="checkbox"> Console has no uncaught errors</label>
+    <label class="check"><input type="checkbox"> Network tab shows successful requests</label>
+    <label class="check"><input type="checkbox"> Refreshing a nested page does not break it</label>
+    <label class="check"><input type="checkbox"> The deployed link works on another device/network</label>
+   </div></div>
+  </div>
+ </div>
+</section>
+
+<section class="slide" data-title="Debugging playbook">
+ <div class="slide-inner">
+  <div class="eyebrow">When it breaks, narrow the problem down</div><h2>Debug with evidence, <span class="gradient">not random edits.</span></h2>
+  <div class="two-col">
+   <div class="steps">
+    <div class="step"><div><h3>Reproduce it</h3><p>Write down the exact action and what you expected versus what happened.</p></div></div>
+    <div class="step"><div><h3>Read the first useful error</h3><p>Check terminal output, browser console, Network tab, and server logs. Fix the earliest real error first.</p></div></div>
+    <div class="step"><div><h3>Find which layer failed</h3><p>Does the page render? Is a request sent? Does the API respond? Does the database query work?</p></div></div>
+    <div class="step"><div><h3>Change one thing</h3><p>Test again after each fix. Avoid changing five files at once because you will not know which change helped.</p></div></div>
+   </div>
+   <div><table class="table"><thead><tr><th>Symptom</th><th>First thing to check</th></tr></thead><tbody>
+    <tr><td>Blank page</td><td>Browser console, import paths, component errors</td></tr>
+    <tr><td><kbd>404</kbd></td><td>Exact route, base URL, route prefix, deployed build</td></tr>
+    <tr><td><kbd>500</kbd></td><td>Backend logs and database connection</td></tr>
+    <tr><td>CORS error</td><td>Exact origin, protocol, allowed methods/headers</td></tr>
+    <tr><td>Works locally only</td><td>Environment variables, build command, production URL</td></tr>
+    <tr><td>Database timeout</td><td>Credentials, network access, provider status, connection limits</td></tr>
+    <tr><td>Module not found</td><td>Dependency installed, filename case, package script</td></tr>
+   </tbody></table></div>
+  </div>
+ </div>
+</section>
+
+<section class="slide" data-title="Frontend deployment to Render">
+ <div class="slide-inner">
+  <div class="eyebrow">Deployment path A · static frontend</div><h2>Put the frontend <span class="gradient">on Render.</span></h2>
+  <div class="steps">
+   <div class="step"><div><h3>Push working code to GitHub</h3><p>Make sure the app runs locally and your latest commit contains the files you intend to deploy.</p></div></div>
+   <div class="step"><div><h3>Create a Static Site</h3><p>In Render, choose New → Static Site, connect the repository, and select the correct branch.</p></div></div>
+   <div class="step"><div><h3>Set build details</h3><p>For a Vite app in the repository root: Build Command <kbd>npm install && npm run build</kbd>; Publish Directory <kbd>dist</kbd>. If the frontend is in <kbd>client</kbd>, set the root directory to <kbd>client</kbd> or adjust commands accordingly.</p></div></div>
+   <div class="step"><div><h3>Add public frontend config</h3><p>Set <kbd>VITE_API_URL</kbd> to your deployed API origin, e.g. <kbd>https://your-api.onrender.com</kbd>. Trigger a new deploy after changing build-time variables.</p></div></div>
+   <div class="step"><div><h3>Open the live URL</h3><p>Test the full flow on the deployed site, not only the local preview. Check Console and Network tabs.</p></div></div>
+  </div>
+  <div class="callout warning">If your app uses React Router with client-side routes, configure a rewrite to serve <kbd>/index.html</kbd> for page routes. Do not rewrite API routes to the frontend.</div>
+ </div>
+</section>
+
+<section class="slide" data-title="Backend deployment">
+ <div class="slide-inner">
+  <div class="eyebrow">Deployment path B · Node API</div><h2>Deploy the API <span class="gradient">as a Web Service.</span></h2>
+  <div class="two-col">
+   <div class="steps">
+    <div class="step"><div><h3>Create a Web Service</h3><p>Connect the backend repository or monorepo folder. Select the branch and set the root directory correctly.</p></div></div>
+    <div class="step"><div><h3>Set commands</h3><p>Use the install and start commands that match your project. For example, install with <kbd>npm install</kbd> and start with <kbd>npm start</kbd> if the package script exists.</p></div></div>
+    <div class="step"><div><h3>Listen on the assigned port</h3><p>Use <kbd>process.env.PORT</kbd>, not a hard-coded port only. Bind to <kbd>0.0.0.0</kbd> where required by the platform.</p></div></div>
+    <div class="step"><div><h3>Set environment variables</h3><p>Add database URL, allowed client origin, and any required server secrets in Render's Environment settings.</p></div></div>
+    <div class="step"><div><h3>Verify health route</h3><p>Open <kbd>/api/health</kbd> on the live API and inspect deployment logs if it fails.</p></div></div>
+   </div>
+   <div>
+    <div class="label">Production config example</div>
+    <div class="code-wrap"><pre class="code">NODE_ENV=production
+CLIENT_ORIGIN=https://your-frontend.onrender.com
+DATABASE_URL=provided-in-host-settings</pre><button class="copy">Copy</button></div>
+    <div class="callout danger">Do not paste real credentials into slides, source code, chat screenshots, or GitHub. Set secret values privately in the hosting dashboard.</div>
+    <p class="mini">Hosting plan behaviour, sleep/cold starts, quotas, and supported runtimes can change. Check Render's current documentation and your service dashboard before the event.</p>
+   </div>
+  </div>
+ </div>
+</section>
+
+<section class="slide" data-title="Database in production">
+ <div class="slide-inner">
+  <div class="eyebrow">Local is not production</div><h2>Connect a <span class="gradient">managed database.</span></h2>
+  <div class="grid g3">
+   <div class="card"><h3>1. Create it</h3><p>Use a managed PostgreSQL service or MongoDB Atlas project. Keep the database in a suitable region when practical.</p></div>
+   <div class="card"><h3>2. Add credentials privately</h3><p>Copy the connection string into the backend service's environment variables. Never into React code.</p></div>
+   <div class="card"><h3>3. Test a real write</h3><p>Create a sample record through the API, read it back, and verify the deployed UI displays it.</p></div>
+  </div>
+  <div class="two-col" style="margin-top:18px">
+   <div><div class="label">Common database failures</div><ul><li>Wrong password or database name.</li><li>Missing network/IP allow-list access.</li><li>SSL requirement not configured.</li><li>Schema or migration was never run.</li><li>Provider free tier or connection limit reached.</li></ul></div>
+   <div><div class="label">Before demo day</div><ul><li>Seed a small, predictable set of fake records.</li><li>Confirm records survive a page refresh.</li><li>Know how to reset demo data safely.</li><li>Have a screenshot or local fallback if connectivity fails.</li></ul></div>
+  </div>
+  <div class="callout warning">Do not depend on a local SQLite file or local database running on your laptop unless you have deliberately designed and tested that deployment arrangement.</div>
+ </div>
+</section>
+
+<section class="slide" data-title="Deployment failure clinic">
+ <div class="slide-inner">
+  <div class="eyebrow">Fast fixes for common launch-day problems</div><h2>Deployment fails? Check <span class="gradient">these in order.</span></h2>
+  <table class="table"><thead><tr><th>Problem</th><th>Likely cause</th><th>What to do</th></tr></thead><tbody>
+   <tr><td>Build command fails</td><td>Wrong root folder or missing script</td><td>Check <kbd>package.json</kbd>, root directory, lockfile, and build logs.</td></tr>
+   <tr><td>Deploy succeeds, page is blank</td><td>Runtime error or wrong asset path</td><td>Open browser Console and Network; verify publish directory is <kbd>dist</kbd> for Vite.</td></tr>
+   <tr><td>Frontend can't reach API</td><td>Local URL still configured, CORS, API down</td><td>Inspect request URL; update <kbd>VITE_API_URL</kbd>; allow the exact site origin.</td></tr>
+   <tr><td>API starts then exits</td><td>Missing env var, bad start script, crash</td><td>Read service logs from the first error and confirm the process binds to <kbd>PORT</kbd>.</td></tr>
+   <tr><td>Refresh gives 404</td><td>SPA route not rewritten</td><td>Add the static-site rewrite for frontend routes.</td></tr>
+   <tr><td>Works for one teammate only</td><td>Uncommitted files or machine-specific config</td><td>Check Git status, lockfile, environment setup, and clean install.</td></tr>
+  </tbody></table>
+  <div class="callout">Useful rule: reproduce locally, fix, commit, push, wait for the new deploy, then retest the live URL. A local fix does not update the deployed site until the new build finishes.</div>
+ </div>
+</section>
+
+<section class="slide" data-title="Demo rehearsal">
+ <div class="slide-inner">
+  <div class="eyebrow">Make the demo easy to follow</div><h2>Rehearse a <span class="gradient">90-second story.</span></h2>
+  <div class="grid g3">
+   <div class="card"><div class="num">0–15 SEC</div><h3>The problem</h3><p>Who experiences it, what goes wrong today, and why that matters.</p></div>
+   <div class="card"><div class="num">15–65 SEC</div><h3>The live flow</h3><p>Show the main action, the system response, and the result saved or produced.</p></div>
+   <div class="card"><div class="num">65–90 SEC</div><h3>What is next</h3><p>Explain what is working now, what is simulated, and what needs validation next.</p></div>
+  </div>
+  <div class="two-col" style="margin-top:18px">
+   <div class="checklist">
+    <label class="check"><input type="checkbox"> The demo account and sample data are ready</label>
+    <label class="check"><input type="checkbox"> Live URL is bookmarked on two devices</label>
+    <label class="check"><input type="checkbox"> No secret keys or personal data visible</label>
+    <label class="check"><input type="checkbox"> Each teammate knows their hand-off line</label>
+    <label class="check"><input type="checkbox"> A short screen recording or screenshots are available as backup</label>
+   </div>
+   <div class="card"><div class="label">If the internet drops</div><h3>Keep the story alive.</h3><p>Have a short local demo, a recording of the exact flow, and screenshots of the result. Be honest if you switch to a backup. Never pretend a video is a live system.</p></div>
+  </div>
+ </div>
+</section>
+
+<section class="slide" data-title="Final ship checklist">
+ <div class="slide-inner">
+  <div class="eyebrow">Before you call it ready</div><h2>The <span class="gradient">ship checklist.</span></h2>
+  <div class="two-col">
+   <div class="checklist">
+    <label class="check"><input type="checkbox"> The main user journey works from start to finish</label>
+    <label class="check"><input type="checkbox"> Inputs are validated and errors are understandable</label>
+    <label class="check"><input type="checkbox"> Data saves and can be retrieved after refresh</label>
+    <label class="check"><input type="checkbox"> The UI is usable on a phone and laptop</label>
+    <label class="check"><input type="checkbox"> Frontend and API are using production URLs</label>
+    <label class="check"><input type="checkbox"> Logs and browser console checked</label>
+   </div>
+   <div class="checklist">
+    <label class="check"><input type="checkbox"> No secrets committed to Git</label>
+    <label class="check"><input type="checkbox"> Demo data is fake and safe</label>
+    <label class="check"><input type="checkbox"> Live link opened in a private/incognito window</label>
+    <label class="check"><input type="checkbox"> Every visible button has a purpose</label>
+    <label class="check"><input type="checkbox"> README explains setup and known limitations</label>
+    <label class="check"><input type="checkbox"> Backup screenshots or recording prepared</label>
+   </div>
+  </div>
+  <div class="callout">If a checklist item is not done, decide whether to fix it, remove the feature from the demo, or clearly explain the limitation. Don't hide a broken flow behind a polished landing page.</div>
+ </div>
+</section>
+
+<section class="slide" data-title="Quick reference">
+ <div class="slide-inner">
+  <div class="eyebrow">Keep this slide handy</div><h2>Commands you'll use <span class="gradient">all weekend.</span></h2>
+  <table class="table"><thead><tr><th>Command</th><th>What it does</th></tr></thead><tbody>
+   <tr><td><kbd>npm install</kbd></td><td>Installs project dependencies.</td></tr>
+   <tr><td><kbd>npm run dev</kbd></td><td>Starts a local development server if the script exists.</td></tr>
+   <tr><td><kbd>npm run build</kbd></td><td>Builds the production frontend if the script exists.</td></tr>
+   <tr><td><kbd>npm start</kbd></td><td>Runs the configured start script.</td></tr>
+   <tr><td><kbd>git status</kbd></td><td>Shows changed and untracked files.</td></tr>
+   <tr><td><kbd>git pull</kbd></td><td>Fetches and merges shared changes.</td></tr>
+   <tr><td><kbd>git add .</kbd></td><td>Stages changes; check status before committing.</td></tr>
+   <tr><td><kbd>git commit -m "message"</kbd></td><td>Saves a local checkpoint.</td></tr>
+   <tr><td><kbd>git push</kbd></td><td>Sends committed changes to the remote repository.</td></tr>
+  </tbody></table>
+  <p class="mini" style="margin-top:14px">Commands depend on the scripts and package manager used by your project. If a command is missing, inspect <kbd>package.json</kbd> rather than guessing.</p>
+ </div>
+</section>
+
+<section class="slide" data-title="Closing">
+ <div class="slide-inner hero-grid">
+  <div>
+   <div class="eyebrow">DeKUT-HRIC · Build weekend</div>
+   <h2>Build small.<br><span class="gradient">Test honestly.</span><br>Ship something real.</h2>
+   <p class="lead">The best prototype is not the one with the most technology. It is the one that makes the problem clear and proves one useful thing can work.</p>
+   <div class="meta-row"><div class="stat"><strong>Make it work</strong>One complete flow</div><div class="stat"><strong>Make it clear</strong>Simple user experience</div><div class="stat"><strong>Make it reliable</strong>Test the live version</div></div>
+  </div>
+  <div class="hero-art"><div class="endmark">✓</div><div class="float-tag tag-a">IDEA</div><div class="float-tag tag-b">BUILD</div><div class="float-tag tag-c">TEST</div><div class="float-tag tag-d">SHIP</div></div>
+ </div>
+</section>
+
+<section class="slide" data-title="Slide overview" id="overviewSlide">
+ <div class="slide-inner">
+  <div class="eyebrow">Jump to a section</div><h2>Presentation <span class="gradient">map.</span></h2>
+  <p>Choose a topic to jump straight to it. Use arrow keys to move slide by slide.</p>
+  <div class="toc" id="toc"></div>
+ </div>
+</section>
+</main>
+<footer class="footer">
+ <div class="footer-note">DEKUT-HRIC · BUILD WEEKEND FIELD GUIDE <span style="color:#4e7655">/</span> Use ← → to navigate · F for fullscreen</div>
+ <div class="controls"><button class="nav-btn" id="prevBtn">← Back</button><span class="counter" id="counter">01 / 20</span><button class="nav-btn primary" id="nextBtn">Next →</button></div>
+</footer>
+</div>
+<script>
+(() => {
+ const slides = [...document.querySelectorAll('.slide')];
+ const overview = document.getElementById('overviewSlide');
+ const bar = document.getElementById('progressBar');
+ const counter = document.getElementById('counter');
+ const prev = document.getElementById('prevBtn');
+ const next = document.getElementById('nextBtn');
+ const toc = document.getElementById('toc');
+ let index = 0;
+ const mainSlides = slides.filter(s => s !== overview);
+ const titleOf = s => s.dataset.title || 'Slide';
+ mainSlides.forEach((s,i) => {
+   const b=document.createElement('button'); b.className='toc-item';
+   b.innerHTML=`<span>${String(i+1).padStart(2,'0')}</span><b>${titleOf(s)}</b>`;
+   b.addEventListener('click',()=>show(i)); toc.appendChild(b);
+ });
+ const overviewIndex = slides.indexOf(overview);
+ function show(i){
+   index = Math.max(0,Math.min(slides.length-1,i));
+   slides.forEach((s,n)=>s.classList.toggle('active',n===index));
+   const current=slides[index];
+   const logicalIndex = current===overview ? mainSlides.length : mainSlides.indexOf(current);
+   counter.textContent = `${String(logicalIndex+1).padStart(2,'0')} / ${String(mainSlides.length).padStart(2,'0')}`;
+   bar.style.width = `${((logicalIndex+1)/mainSlides.length)*100}%`;
+   prev.disabled = index===0;
+   next.textContent = index===slides.length-1 ? 'Start again ↺' : 'Next →';
+   if(current===overview) next.textContent='Back to slides →';
+   current.scrollTop=0;
+ }
+ function nextSlide(){ if(index===slides.length-1) show(0); else if(index===overviewIndex) show(0); else show(index+1); }
+ function prevSlide(){ if(index===overviewIndex) show(mainSlides.length-1); else show(index-1); }
+ prev.addEventListener('click',prevSlide); next.addEventListener('click',nextSlide);
+ document.getElementById('overviewBtn').addEventListener('click',()=>show(overviewIndex));
+ document.getElementById('fullscreenBtn').addEventListener('click',()=>{
+   if(!document.fullscreenElement) document.documentElement.requestFullscreen?.();
+   else document.exitFullscreen?.();
+ });
+ document.addEventListener('keydown',e=>{
+   if(['ArrowRight','PageDown',' '].includes(e.key)){e.preventDefault();nextSlide();}
+   if(['ArrowLeft','PageUp'].includes(e.key)){e.preventDefault();prevSlide();}
+   if(e.key.toLowerCase()==='f'){if(!document.fullscreenElement)document.documentElement.requestFullscreen?.();else document.exitFullscreen?.();}
+   if(e.key==='Escape' && index===overviewIndex) show(0);
+ });
+ document.querySelectorAll('.copy').forEach(btn=>{
+   btn.addEventListener('click',async()=>{
+     const text=btn.parentElement.querySelector('pre').innerText;
+     try{await navigator.clipboard.writeText(text);btn.textContent='Copied!';}
+     catch{btn.textContent='Select text';}
+     setTimeout(()=>btn.textContent='Copy',1300);
+   });
+ });
+ // Touch swipe for phones
+ let startX=0;
+ document.querySelector('.slides').addEventListener('touchstart',e=>{startX=e.changedTouches[0].screenX},{passive:true});
+ document.querySelector('.slides').addEventListener('touchend',e=>{
+   const dx=e.changedTouches[0].screenX-startX;
+   if(Math.abs(dx)>65){dx<0?nextSlide():prevSlide();}
+ },{passive:true});
+ show(0);
+})();
+</script>
+</body>
+</html>
